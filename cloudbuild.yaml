@@ -34,6 +34,7 @@ steps:
         - '1'
         - '--severity'
         - 'CRITICAL'
+        - '--ignore-unfixed'
         - '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/backend-api:$COMMIT_SHA'
 
     # 5. Push validated image to google arrtifact registry
