@@ -18,7 +18,7 @@ spec:
       serviceAccountName: backend-ksa
       containers:
         - name: api
-          image: us-central1-docker.pkg.dev/gke-project-1-500610/app-practice-artifact-repo/backend-api:COMMIT_SHA
+          image: us-central1-docker.pkg.dev//app-practice-artifact-repo/backend-api:
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080 
