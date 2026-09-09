@@ -74,6 +74,10 @@ steps:
 
         - |
 
+            gcloud components install kubectl gke-gcloud-auth-plugin --quiet
+
+            export USE_GKE_GCLOUD_AUTH_PLUGIN=True
+
             gcloud container clusters get-credentials $_CLUSTER_NAME \
 
               --region $_REGION \
