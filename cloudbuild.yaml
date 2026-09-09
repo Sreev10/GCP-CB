@@ -72,15 +72,15 @@ steps:
       args:
         - '-c'
         - | 
-            echo "Project: $PROJECT_ID"
-            echo "Region: $REGION"
-            echo "Cluster: $CLUSTER_NAME" 
+            echo "Project: $$PROJECT_ID"
+            echo "Region: $$REGION"
+            echo "Cluster: $$CLUSTER_NAME" 
             
             gcloud components install kubectl gke-gcloud-auth-plugin --quiet
             export USE_GKE_GCLOUD_AUTH_PLUGIN=True
-            gcloud container clusters get-credentials $_CLUSTER_NAME \
-              --region $_REGION \
-              --project $PROJECT_ID
+            gcloud container clusters get-credentials $$_CLUSTER_NAME \
+              --region $$_REGION \
+              --project $$PROJECT_ID
             kubectl get nodes
 
   # 8. Install Argo CD and create Argo CD Application
