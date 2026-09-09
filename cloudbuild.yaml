@@ -1,0 +1,72 @@
+steps: 
+    # 1. Run secret detection with gitleaks
+    - name: 'zricethezav/gitleaks:latest'
+      entrypoint: 'sh'
+      args: 
+        - '-c'
+        - git config --global --add safe.directory /workspace && gitleaks detect --source=/workspace --verbose --redact'
+
+    # 2. Run filesystem vulnerability scan with trivy
+    - name: 'aquasec/trivy:latest'
+      args: 
+        - 'fs'
+        - '--exit-code'
+        - '1'
+        - '--severity'
+        - 'CRITICAL,HIGH'
+        - '/workspace'
+
+    # 3. Build Docker container image 
+    - name: 'gcr.io/cloud-builders/docker'
+      args:
+        - 'build'
+        - '-t'
+        - '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/backend-api:$COMMIT_SHA'
+        - '-t'
+        - '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/backend-api:latest'
+        - './src'
+
+    # 4. scan container image with trivy before pushing 
+    - name: 'aquasec/trivy:latest'
+      args:
+        - 'image'
+        - '--exit-code'
+        - '1'
+        - '--severity'
+        - 'CRITICAL'
+        - '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/backend-api:$COMMIT_SHA'
+
+    # 5. Push validated image to google arrtifact registry
+    - name: 'gcr.io/cloud-builders/docker'
+      args:
+        - 'push'
+        - '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/backend-api:$COMMIT_SHA'
+
+    - name: 'gcr.io/cloud-builders/docker'
+      args:
+        -  'push'
+        -  '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/backend-api:latest'
+
+    - name: 'gcr.io/cloud-builders/git'
+      id: 'UPDATE-GITOPS-MANIFEST'
+      entrypoint: 'bash'
+      secretEnv:
+        - 'GITHUB_TOKEN'
+      args:
+        - '-c'
+        - |
+            chmod +x scripts/update-image.sh
+            ./scripts/update-image.sh  
+
+substitutions:
+    _REGION: 'us-central1'
+    _REPO_NAME: 'app-practice-artifact-repo'     
+
+options:
+    logging: CLOUD_LOGGING_ONLY
+
+availableSecrets:
+  secretManager:
+    - versionName: 'projects/$PROJECT_ID/secrets/GitHub-token/versions/latest'
+      env: 'GITHUB_TOKEN'
+
