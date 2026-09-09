@@ -83,9 +83,10 @@ steps:
         - 'CLOUDSDK_CORE_PROJECT=$PROJECT_ID'
       args:
          -  'apply'
+         - '--server-side'
          - '-f'
          - 'https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml'  
-#step 9  wait for ARGO CD server 
+#step 10 wait for ARGO CD server 
     - name: 'gcr.io/cloud-builders/kubectl'
       id: 'WAIT-FOR-ARGOCD-SERVER'
       env: 
@@ -99,7 +100,7 @@ steps:
          -  'deployment/argocd-server'
          -  '-n'
          -  'argocd'
-# step 10 create ARGO CD application
+# step 11 create ARGO CD application
     - name: 'gcr.io/cloud-builders/kubectl'
       id: 'CREATE-ARGOCD-APPLICATION'
       env: 
@@ -111,7 +112,7 @@ steps:
          -  '-f'
          -  'k8s/overlays/argocd-application.yaml'  
 
-# step 11 verify ARGO CD application 
+# step 12 verify ARGO CD application 
     - name: 'gcr.io/cloud-builders/kubectl'
       id: 'VERIFY-ARGOCD-APPLICATION'
       env: 

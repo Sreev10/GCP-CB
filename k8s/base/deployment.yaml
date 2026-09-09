@@ -18,7 +18,7 @@ spec:
       serviceAccountName: backend-ksa
       containers:
         - name: api
-          image: us-central1-docker.pkg.dev/gke-project-1-500610/app-practice-artifact-repo/backend-api:3b15f7ac02e70e58322e43ba7e6f2a10b5bf11b9
+          image: us-central1-docker.pkg.dev/gke-project-1-500610/app-practice-artifact-repo/backend-api:
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080 
