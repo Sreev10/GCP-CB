@@ -42,12 +42,12 @@ steps:
       args:
         - 'push'
         - '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/backend-api:$COMMIT_SHA'
-
+#6 step
     - name: 'gcr.io/cloud-builders/docker'
       args:
         -  'push'
         -  '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/backend-api:latest'
-
+#7 step
     - name: 'gcr.io/cloud-builders/git'
       id: 'UPDATE-GITOPS-MANIFEST'
       entrypoint: 'bash'
@@ -61,29 +61,18 @@ steps:
         - |
             chmod +x scripts/update-image.sh
             ./scripts/update-image.sh  
-
-    - name: 'gcr.io/google.com/cloudsdktool/google-cloud-cli:slim'
+#8 step
+    - name: 'gcr.io/cloud-builders/kubectl'
       id: 'CONFIGURE-GKE'
-      entrypoint: 'bash'
       env: 
-        - 'CLUSTER_NAME=$_CLUSTER_NAME'
-        - 'REGION=$_REGION'
-        - 'PROJECT_ID=$PROJECT_ID'
+        - 'CLOUDSDK_COMPUTE_REGION=$_REGION'
+        - 'CLOUDSDK_CONTAINER_CLUSTER=$_CLUSTER_NAME'
+        - 'CLOUDSDK_CORE_PROJECT=$PROJECT_ID'
       args:
-        - '-c'
-        - | 
-            echo "Project: $$PROJECT_ID"
-            echo "Region: $$REGION"
-            echo "Cluster: $$CLUSTER_NAME" 
-            
-            gcloud components install kubectl gke-gcloud-auth-plugin --quiet
-            export USE_GKE_GCLOUD_AUTH_PLUGIN=True
-            gcloud container clusters get-credentials $$_CLUSTER_NAME \
-              --region $$_REGION \
-              --project $$PROJECT_ID
-            kubectl get nodes
+        - 'get'
+        - 'nodes'
 
-  # 8. Install Argo CD and create Argo CD Application
+  # 9. Install Argo CD and create Argo CD Application
 
     - name: 'gcr.io/google.com/cloudsdktool/google-cloud-cli:slim'
 
