@@ -84,6 +84,7 @@ steps:
       args:
          -  'apply'
          - '--server-side'
+         - '--force-conflicts'
          - '-f'
          - 'https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml'  
 #step 10 wait for ARGO CD server 
