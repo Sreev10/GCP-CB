@@ -71,7 +71,17 @@ steps:
       args:
         - 'get'
         - 'nodes'
-
+# create namespace for argocd
+    - name: 'gcr.io/cloud-builders/kubectl'
+      id: 'CREATE-NAMESPACE-ARGOCD'
+      entrypoint: 'bash'
+      env: 
+        - 'CLOUDSDK_COMPUTE_REGION=$_REGION'
+        - 'CLOUDSDK_CONTAINER_CLUSTER=$_CLUSTER_NAME'
+        - 'CLOUDSDK_CORE_PROJECT=$PROJECT_ID'
+      args:
+         -  '-c'
+         - 'kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -'
   # 9. Install Argo CD and create Argo CD Application
 
     - name: 'gcr.io/cloud-builders/kubectl'
