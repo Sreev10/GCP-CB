@@ -63,27 +63,24 @@ steps:
             ./scripts/update-image.sh  
 
     - name: 'gcr.io/google.com/cloudsdktool/google-cloud-cli:slim'
-
       id: 'CONFIGURE-GKE'
-
       entrypoint: 'bash'
-
+      env: 
+        - 'CLUSTER_NAME=$_CLUSTER_NAME'
+        - 'REGION=$_REGION'
+        - 'PROJECT_ID=$PROJECT_ID'
       args:
-
         - '-c'
-
-        - |
-
+        - | 
+            echo "Project: $PROJECT_ID"
+            echo "Region: $REGION"
+            echo "Cluster: $CLUSTER_NAME" 
+            
             gcloud components install kubectl gke-gcloud-auth-plugin --quiet
-
             export USE_GKE_GCLOUD_AUTH_PLUGIN=True
-
             gcloud container clusters get-credentials $_CLUSTER_NAME \
-
               --region $_REGION \
-
               --project $PROJECT_ID
-
             kubectl get nodes
 
   # 8. Install Argo CD and create Argo CD Application
@@ -135,8 +132,6 @@ serviceAccount: 'projects/$PROJECT_ID/serviceAccounts/jenkins-cicd@gke-project-1
 
 options:
   logging: CLOUD_LOGGING_ONLY
-options:
-    logging: CLOUD_LOGGING_ONLY
 
 availableSecrets:
   secretManager:
