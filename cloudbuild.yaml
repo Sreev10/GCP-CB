@@ -74,42 +74,31 @@ steps:
 
   # 9. Install Argo CD and create Argo CD Application
 
-    - name: 'gcr.io/google.com/cloudsdktool/google-cloud-cli:slim'
+    - name: 'gcr.io/cloud-builders/kubectl'
 
       id: 'INSTALL-ARGOCD'
 
-      entrypoint: 'bash'
+      env: 
+        - 'CLOUDSDK_COMPUTE_REGION=$_REGION'
+        - 'CLOUDSDK_CONTAINER_CLUSTER=$_CLUSTER_NAME'
+        - 'CLOUDSDK_CORE_PROJECT=$PROJECT_ID'
 
       args:
 
          - '-c'
-
          - |
-
             kubectl create namespace argocd \
-
               --dry-run=client \
-
               -o yaml | kubectl apply -f -
-
             kubectl apply -n argocd \
-
               -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-
             kubectl wait \
-
               --for=condition=Available \
-
               deployment/argocd-server \
-
               -n argocd \
-
               --timeout=300s
-
             kubectl apply \
-
               -f k8s/overlays/argocd-application.yaml
-
             kubectl get applications -A        
 
 substitutions:
