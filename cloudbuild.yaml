@@ -53,6 +53,9 @@ steps:
       entrypoint: 'bash'
       secretEnv:
         - 'GITHUB_TOKEN'
+      env:
+        - 'PROJECT_ID=$PROJECT_ID'
+        - 'COMMIT_SHA=$COMMIT_SHA'
       args:
         - '-c'
         - |
