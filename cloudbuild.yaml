@@ -77,29 +77,51 @@ steps:
     - name: 'gcr.io/cloud-builders/kubectl'
 
       id: 'INSTALL-ARGOCD'
-
       env: 
         - 'CLOUDSDK_COMPUTE_REGION=$_REGION'
         - 'CLOUDSDK_CONTAINER_CLUSTER=$_CLUSTER_NAME'
         - 'CLOUDSDK_CORE_PROJECT=$PROJECT_ID'
-
       args:
+         -  'apply'
+         - '-f'
+         - 'https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml'  
+#step 9  wait for ARGO CD server 
+    - name: 'gcr.io/cloud-builders/kubectl'
+      id: 'WAIT-FOR-ARGOCD-SERVER'
+      env: 
+        - 'CLOUDSDK_COMPUTE_REGION=$_REGION'
+        - 'CLOUDSDK_CONTAINER_CLUSTER=$_CLUSTER_NAME'
+        - 'CLOUDSDK_CORE_PROJECT=$PROJECT_ID'
+      args:
+         -  'wait'
+         -  '--for=condition=available'
+         -  '--timeout=300s'
+         -  'deployment/argocd-server'
+         -  '-n'
+         -  'argocd'
+# step 10 create ARGO CD application
+    - name: 'gcr.io/cloud-builders/kubectl'
+      id: 'CREATE-ARGOCD-APPLICATION'
+      env: 
+        - 'CLOUDSDK_COMPUTE_REGION=$_REGION'
+        - 'CLOUDSDK_CONTAINER_CLUSTER=$_CLUSTER_NAME'
+        - 'CLOUDSDK_CORE_PROJECT=$PROJECT_ID'
+      args:
+         -  'apply'
+         -  '-f'
+         -  'k8s/overlays/argocd-application.yaml'  
 
-         - '-c'
-         - |
-            kubectl create namespace argocd \
-              --dry-run=client \
-              -o yaml | kubectl apply -f -
-            kubectl apply -n argocd \
-              -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-            kubectl wait \
-              --for=condition=Available \
-              deployment/argocd-server \
-              -n argocd \
-              --timeout=300s
-            kubectl apply \
-              -f k8s/overlays/argocd-application.yaml
-            kubectl get applications -A        
+# step 11 verify ARGO CD application 
+    - name: 'gcr.io/cloud-builders/kubectl'
+      id: 'VERIFY-ARGOCD-APPLICATION'
+      env: 
+        - 'CLOUDSDK_COMPUTE_REGION=$_REGION'
+        - 'CLOUDSDK_CONTAINER_CLUSTER=$_CLUSTER_NAME'
+        - 'CLOUDSDK_CORE_PROJECT=$PROJECT_ID'
+      args:
+         -  'get'
+         -  'applications'
+         - '-A'       
 
 substitutions:
     _REGION: 'us-central1'
