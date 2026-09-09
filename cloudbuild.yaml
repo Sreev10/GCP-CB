@@ -62,10 +62,75 @@ steps:
             chmod +x scripts/update-image.sh
             ./scripts/update-image.sh  
 
+    - name: 'gcr.io/google.com/cloudsdktool/google-cloud-cli:slim'
+
+      id: 'CONFIGURE-GKE'
+
+      entrypoint: 'bash'
+
+      args:
+
+        - '-c'
+
+        - |
+
+            gcloud container clusters get-credentials $_CLUSTER_NAME \
+
+              --region $_REGION \
+
+              --project $PROJECT_ID
+
+            kubectl get nodes
+
+  # 8. Install Argo CD and create Argo CD Application
+
+    - name: 'gcr.io/google.com/cloudsdktool/google-cloud-cli:slim'
+
+      id: 'INSTALL-ARGOCD'
+
+      entrypoint: 'bash'
+
+      args:
+
+         - '-c'
+
+         - |
+
+            kubectl create namespace argocd \
+
+              --dry-run=client \
+
+              -o yaml | kubectl apply -f -
+
+            kubectl apply -n argocd \
+
+              -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+            kubectl wait \
+
+              --for=condition=Available \
+
+              deployment/argocd-server \
+
+              -n argocd \
+
+              --timeout=300s
+
+            kubectl apply \
+
+              -f k8s/overlays/argocd-application.yaml
+
+            kubectl get applications -A        
+
 substitutions:
     _REGION: 'us-central1'
-    _REPO_NAME: 'app-practice-artifact-repo'     
+    _REPO_NAME: 'app-practice-artifact-repo' 
+    _CLUSTER_NAME: 'practice-gke-cluster' 
 
+serviceAccount: 'projects/$PROJECT_ID/serviceAccounts/jenkins-cicd@gke-project-1-500610.iam.gserviceaccount.com'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
 options:
     logging: CLOUD_LOGGING_ONLY
 
