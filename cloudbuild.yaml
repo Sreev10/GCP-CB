@@ -93,6 +93,8 @@ steps:
         - 'CLOUDSDK_CORE_PROJECT=$PROJECT_ID'
       args:
          -  'apply'
+         - '-n'
+         - 'argocd'
          - '--server-side'
          - '--force-conflicts'
          - '-f'
