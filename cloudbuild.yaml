@@ -104,13 +104,30 @@ steps:
         - 'CLOUDSDK_COMPUTE_REGION=$_REGION'
         - 'CLOUDSDK_CONTAINER_CLUSTER=$_CLUSTER_NAME'
         - 'CLOUDSDK_CORE_PROJECT=$PROJECT_ID'
+      entrypoint: 'bash'
       args:
-         -  'wait'
-         -  '--for=condition=available'
-         -  '--timeout=300s'
-         -  'deployment/argocd-server'
-         -  '-n'
-         -  'argocd'
+         -  '-c'
+         -  |
+               echo "Checking Argo CD resources..."
+               kubectl get namespace argocd
+               kubectl get deployments -n argocd
+               kubectl get pods -n argocd
+               echo "Waiting for argocd-server deployment to appear..."
+               for i in {1..30}; do
+                 if kubectl get deployment argocd-server -n argocd >/dev/null 2>&1; then
+                   echo "argocd-server deployment found."  
+                   break
+                 fi
+                 echo "argocd-server not found yet. Waiting 10 seconds..."
+                 sleep 10
+                done
+                kubectl get deployment argocd-server -n argocd
+                kubectl wait \
+                  --for=condition=available \
+                  deployment/argocd-server \
+                  -n argocd \
+                 --timeout=300s
+
 # step 11 create ARGO CD application
     - name: 'gcr.io/cloud-builders/kubectl'
       id: 'CREATE-ARGOCD-APPLICATION'
