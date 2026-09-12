@@ -75,6 +75,24 @@ resource "google_container_cluster" "primary" {
   }
 }
 
+
+# GCP SERVICE ACCOUNT FOR GKE NODEPOOL
+
+resource "google_service_account" "gke_nodepool_sa" {
+  account_id   = "gke-nodepool-sa"
+  display_name = "GKE Node Pool Service Account"
+}
+
+# ALLOW GKE NODES TO PULL IMAGES FROM ARTIFACT REGISTRY 
+
+resource "google_artifact_registry_repository_iam_member" "gke_node_artifact_registry" {
+  project    = var.project_id
+  location   = google_artifact_registry_repository.repo.location
+  repository = google_artifact_registry_repository.repo.name
+  role       = "roles/artifactregistry.reader"
+  member     = "serviceAccount:${google_service_account.gke_nodepool_sa.email}"
+}
+
 # GKE AUTOSCALING NODE POOL 
 
 resource "google_container_node_pool" "primary_nodes" {
@@ -91,6 +109,7 @@ resource "google_container_node_pool" "primary_nodes" {
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform",
     ]
+    service_account = google_service_account.gke_nodepool_sa.email
     workload_metadata_config {
       mode = "GKE_METADATA"
     }
